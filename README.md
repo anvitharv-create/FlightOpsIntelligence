@@ -2,7 +2,7 @@
 
 ### Airline Operations Performance & Delay Investigation Platform
 
-FlightOps Intelligence is a data analytics project designed to analyze airline operational performance, flight delays, cancellations, diversions, and delay causes using Python, SQL Server, and Power BI.
+FlightOps Intelligence is a data analytics project designed to analyze airline operational performance, flight delays, cancellations, diversions, and recorded delay causes using Python, SQL Server, and Power BI.
 
 The project transforms raw flight operations data into an interactive dashboard to identify delay patterns, compare airline performance, and investigate operational inefficiencies.
 
@@ -27,6 +27,8 @@ The project transforms raw flight operations data into an interactive dashboard 
 
 ## Dashboard Preview
 
+The following screenshots should be stored in `documentation/images/images/`. Ensure that each file exists at the specified path and that the filename matches exactly.
+
 ### 1. Operations Overview
 
 Provides a high-level view of flight operations, including total flights, delayed flights, average arrival and departure delays, cancellation rate, on-time performance, and diversions.
@@ -45,7 +47,7 @@ Visualizes daily flight cancellations to help identify changes in cancellation a
 
 ![FlightOps Intelligence - Cancellation Analysis](documentation/images/images/cancellation-analysis.png)
 
-### 4. Arrival vs Departure Delays
+### 4. Arrival vs. Departure Delays
 
 Compares average departure and arrival delays across flight dates.
 
@@ -82,7 +84,47 @@ The dataset includes:
 - Cancellation and diversion indicators
 - Recorded delay-cause information
 
-The raw and processed CSV files are excluded from Git tracking because of their size. Obtain the original dataset from the relevant official source and place the required raw CSV in `data/raw/`.
+**Official source:** [US Bureau of Transportation Statistics — TranStats](https://www.transtats.bts.gov/)
+
+The raw and processed CSV files are excluded from Git tracking because of their size. Download the appropriate January 2025 flight operations data from the official source and place the required raw CSV in `data/raw/`.
+
+The cleaning script expects the raw file to be named:
+
+`flight_operations_january_2025.csv`
+
+Confirm that the downloaded file contains the columns expected by the cleaning script before running it.
+
+## Project Workflow
+
+```text
+Raw Flight CSV
+      |
+      v
+Python and Pandas Data Cleaning
+      |
+      v
+Processed Dataset
+      |
+      v
+SQL Server Analysis
+      |
+      v
+Power BI Dashboard
+```
+
+## Data Cleaning
+
+The script `src/data_cleaning.py` is intended to prepare the raw flight data. Its documented steps are:
+
+- Read the raw flight operations CSV.
+- Convert flight dates into date values.
+- Check for and remove duplicate rows.
+- Create cancellation and diversion indicators.
+- Create departure-delay and arrival-delay indicators.
+- Calculate total recorded delay-cause minutes.
+- Save the processed dataset in `data/processed/`.
+
+These descriptions should match the actual implementation in `src/data_cleaning.py`.
 
 ## Project Structure
 
@@ -111,14 +153,22 @@ FlightOpsIntelligence/
 └── requirements.txt
 ```
 
+Only files that actually exist should be committed. Git does not track empty directories, so the `sql/`, `data/raw/`, and `data/processed/` folders may not appear in the repository until they contain tracked files.
+
 ## Getting Started
+
+### Prerequisites
+
+- Python 3.12 or another version compatible with the project's dependencies
+- SQL Server Express
+- SQL Server Management Studio (SSMS)
+- Microsoft Power BI Desktop
+- Git
 
 ### 1. Clone the Repository
 
-Replace the placeholder with your actual GitHub repository URL.
-
 ```bash
-git clone <https://github.com/anvitharv-create>
+git clone https://github.com/anvitharv-create/FlightOpsIntelligence.git
 cd FlightOpsIntelligence
 ```
 
@@ -131,21 +181,33 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
+If PowerShell blocks activation, use Command Prompt:
+
+```bat
+.venv\Scripts\activate.bat
+```
+
 ### 3. Install Dependencies
 
-Install the required Python library using the provided dependency file.
+Install the required Python libraries from the dependency file:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
+Make sure `requirements.txt` contains Pandas and every other package imported by `src/data_cleaning.py`.
+
 ### 4. Prepare the Dataset
 
-Place the January 2025 raw flight operations CSV in `data/raw/` with the following filename:
+Download the appropriate January 2025 flight operations data from [TranStats](https://www.transtats.bts.gov/).
 
-`flight_operations_january_2025.csv`
+Place the raw CSV at:
 
-Ensure that the dataset contains the columns expected by the cleaning script.
+```text
+data/raw/flight_operations_january_2025.csv
+```
+
+The file must contain the column names and data format expected by the cleaning script.
 
 ### 5. Run Data Cleaning
 
@@ -153,29 +215,36 @@ Ensure that the dataset contains the columns expected by the cleaning script.
 python .\src\data_cleaning.py
 ```
 
-The script:
+The processed dataset should be saved in `data/processed/`. Confirm that the script completes successfully and that the output file is created.
 
-- Reads the raw flight operations CSV.
-- Converts flight dates into date values.
-- Removes duplicate rows.
-- Creates cancellation and diversion indicators.
-- Creates departure-delay and arrival-delay indicators.
-- Calculates total recorded delay-cause minutes.
-- Saves the processed dataset in `data/processed/`.
+### 6. Load the Data into SQL Server
 
-### 6. Open the Power BI Dashboard
+1. Open SSMS and connect to your SQL Server Express instance.
+2. Create or select the database for this project.
+3. Import the processed CSV into a SQL Server table.
+4. Confirm the table name, column names, data types, row count, and missing values.
+5. Add and run SQL scripts from the `sql/` directory as they are developed.
 
-Open `powerbi/FlightOps_Intelligence.pbix` in Microsoft Power BI Desktop.
+SQL analysis is not documented as complete until the relevant SQL scripts have been added and tested against the imported table.
 
-Configure or refresh the data source as needed for your local environment.
+### 7. Open the Power BI Dashboard
+
+1. Open `powerbi/FlightOps_Intelligence.pbix` in Power BI Desktop.
+2. Update the data source path or connection settings for your local environment.
+3. Refresh the report.
+4. Check that visuals and measures load without errors.
+
+The Power BI file must be included in the repository for this step to work as written. If it is not committed to GitHub, arrange access to the file separately and update these instructions.
 
 ## Key Considerations
 
 - Missing delay values should not automatically be treated as zero.
 - Missing delay-cause values require careful interpretation.
-- Cancellation and diversion records should be handled appropriately when calculating operational KPIs.
+- Cancellation and diversion records should be handled consistently when calculating operational KPIs.
 - Average delays can be influenced by flights with unusually large delays.
-- The January 2025 dataset represents one month of operations and should not be treated as a complete picture of annual airline performance.
+- Route rankings should be interpreted alongside flight counts.
+- An arrival on-time metric should use a clearly stated threshold and denominator. A zero-departure-delay rate is not the same as arrival on-time performance.
+- January 2025 represents one month of operations and should not be treated as a complete picture of annual airline performance.
 
 ## Future Improvements
 
@@ -184,8 +253,19 @@ Configure or refresh the data source as needed for your local environment.
 - Expand the analysis to multiple months and years.
 - Include route-level flight counts to provide context for average delays.
 - Automate data refresh and reporting.
+- Add validated findings and operational recommendations after the analysis is complete.
 
 ## Project Status
 
-The Power BI dashboard and initial Python data-cleaning workflow have been developed. SQL scripts and additional documentation are planned improvements.
+The Power BI dashboard and initial Python data-cleaning workflow have been developed. SQL scripts, SQL-based analysis, KPI validation, and additional documentation should be marked complete only after they have been implemented and tested.
 
+## Author
+
+**Anvitha R V**
+
+- GitHub: [anvitharv-create](https://github.com/anvitharv-create)
+- LinkedIn: [anvitharv](https://www.linkedin.com/in/anvitharv)
+
+---
+
+*FlightOps Intelligence demonstrates an end-to-end analytics workflow: data preparation with Python, operational analysis with SQL Server, and interactive dashboard reporting with Power BI.*
