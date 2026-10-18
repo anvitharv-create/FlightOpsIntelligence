@@ -118,7 +118,7 @@ FlightOpsIntelligence/
 Replace the placeholder with your actual GitHub repository URL.
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone <https://github.com/anvitharv-create>
 cd FlightOpsIntelligence
 ```
 
